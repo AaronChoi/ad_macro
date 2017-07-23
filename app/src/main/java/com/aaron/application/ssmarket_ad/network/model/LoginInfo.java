@@ -85,6 +85,8 @@ public class LoginInfo {
     private int todayPlusBStatus;
     @Element(required = false)
     private int todayPlusCStatus;
+    @Element(required = false)
+    private int newOrderCount;
 
     public String getStoreName() {
         return storeName;
@@ -248,5 +250,9 @@ public class LoginInfo {
 
     public int getTodayPlusCStatus() {
         return todayPlusCStatus;
+    }
+
+    public int getNewOrderCount() {
+        return newOrderCount;
     }
 }
