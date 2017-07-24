@@ -1,15 +1,23 @@
 package com.aaron.application.ssmarket_ad.activity;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,6 +31,7 @@ import android.widget.TextView;
 import com.aaron.application.ssmarket_ad.BaseApplication;
 import com.aaron.application.ssmarket_ad.R;
 import com.aaron.application.ssmarket_ad.adapter.CategoryAdapter;
+import com.aaron.application.ssmarket_ad.common.AdType;
 import com.aaron.application.ssmarket_ad.common.Constant;
 import com.aaron.application.ssmarket_ad.common.PreferenceManager;
 import com.aaron.application.ssmarket_ad.network.RetrofitManager;
@@ -45,12 +54,20 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private AlarmManager alarmMgr;
+    private PendingIntent alarmIntent;
     private GridView gridView;
+    private CategoryAdapter adapter;
+    private PreferenceManager pref;
+    private AdType adType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        alarmMgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        pref = PreferenceManager.getInstance(this);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -78,15 +95,15 @@ public class MainActivity extends AppCompatActivity
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                final CategoryAdapter adapter = (CategoryAdapter) gridView.getAdapter();
                 final Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(System.currentTimeMillis());
                 calendar.set(Calendar.HOUR_OF_DAY, 5);
                 calendar.set(Calendar.SECOND, 0);
                 calendar.set(Calendar.MILLISECOND, 0);
 
                 // 선택된 날짜가 있으면 그대로 설정
-                if(PreferenceManager.getInstance(getApplicationContext()).getLong(String.valueOf(adapter.getItemId(position)), 0) != 0) {
-                    calendar.setTime(new Date(PreferenceManager.getInstance(getApplicationContext()).getLong(String.valueOf(adapter.getItemId(position)), 0)));
+                if(pref.getLong(String.valueOf(adapter.getItemId(position)), 0) != 0) {
+                    calendar.setTime(new Date(pref.getLong(String.valueOf(adapter.getItemId(position)), 0)));
                 }
 
                 DatePickerDialog dialog = new DatePickerDialog(MainActivity.this, new DatePickerDialog.OnDateSetListener() {
@@ -106,8 +123,14 @@ public class MainActivity extends AppCompatActivity
         findViewById(R.id.btn_action).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent serviceIntent = new Intent(MainActivity.this, MacroService.class);
-                startService(serviceIntent);
+                makeAlarmJob();
+            }
+        });
+
+        findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopMacro();
             }
         });
 
@@ -116,6 +139,64 @@ public class MainActivity extends AppCompatActivity
         } else {
             requestInitialData();
         }
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(stopReceiver, new IntentFilter("action.request.ad.complete"));
+    }
+
+    private void makeAlarmJob() {
+        long startTime = getServiceStartTime();
+        if(startTime == 0) {
+            Log.d("MainActivity", "날짜를 설정해주세요.");
+            return;
+        }
+
+        Intent serviceIntent = new Intent(this, MacroService.class);
+        serviceIntent.putExtra("adType", adType.name());
+        alarmIntent = PendingIntent.getService(this, 0, serviceIntent, 0);
+        alarmMgr.set(AlarmManager.RTC_WAKEUP,
+                startTime - 3 * 60 * 1000, // start time
+                alarmIntent);
+    }
+
+    private BroadcastReceiver stopReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(adType == AdType.C) {
+                Log.d("MainActivity", "광고 매크로 종료");
+                return;
+            }
+            Log.d("MainActivity", "다음 매크로 실행 대기 중..");
+            adType = AdType.getType(adType.getTypeNum() - 1);
+            makeAlarmJob();
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(stopReceiver);
+    }
+
+    private void stopMacro() {
+        MacroService.stopService = true;
+        if(alarmMgr != null) {
+            alarmMgr.cancel(alarmIntent);
+        }
+    }
+
+    private long getServiceStartTime() {
+        if(TextUtils.isEmpty(pref.getString(PreferenceManager.PREFERENCE_AD_T, ""))
+                || TextUtils.isEmpty(pref.getString(PreferenceManager.PREFERENCE_AD_B, ""))) {
+            return 0;
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(pref.getLong(String.valueOf(adapter.getItemId(adType.getTypeNum()-1)), 0));
+        Log.d("MainActivity", "calendar time : " + calendar.get(Calendar.MONTH) + "month " + calendar.get(Calendar.DAY_OF_MONTH) + "date "
+                + calendar.get(Calendar.HOUR_OF_DAY) + "hour " + calendar.get(Calendar.MINUTE) + "min");
+
+        return calendar.getTimeInMillis();
     }
 
     private void requestToken() {
@@ -133,7 +214,7 @@ public class MainActivity extends AppCompatActivity
                     Root root = response.body();
                     if(root != null && root.getResult_code() == 0) {
                         BaseApplication.TOKEN = root.getInfo().getOauth_token();
-                        PreferenceManager.getInstance(getApplicationContext()).put(PreferenceManager.PREFERENCE_TOKEN, BaseApplication.TOKEN);
+                        pref.put(PreferenceManager.PREFERENCE_TOKEN, BaseApplication.TOKEN);
                         requestInitialData();
                     }
                 }
@@ -184,20 +265,17 @@ public class MainActivity extends AppCompatActivity
                     Root root = response.body();
                     if(root != null && root.getResult_code() == 0) {
                         // check item list
-                        if(root.getItems() != null) {
-                            ArrayList<CategoryItem> items = new ArrayList<>();
-                            int index = 0;
-                            for(CategoryItem item : root.getItems()) {
-                                if(item.getCategory() == 44) {
-                                    items.add(item);
-                                    if(++index > 3) {
-                                        break;
-                                    }
-                                }
+                        ArrayList<CategoryItem> items = new ArrayList<>();
+                        items.addAll(root.getItems());
+                        for(CategoryItem item : root.getItems()) {
+                            if(item.getCategory() != 44 || !item.getName().startsWith("신상")) {
+                                items.remove(item);
                             }
-
-                            gridView.setAdapter(new CategoryAdapter(getApplicationContext(), items));
                         }
+
+                        adType = AdType.getType(items.size());
+                        adapter = new CategoryAdapter(getApplicationContext(), items);
+                        gridView.setAdapter(adapter);
                     }
                 }
             }

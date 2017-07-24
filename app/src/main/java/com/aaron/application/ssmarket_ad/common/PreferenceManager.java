@@ -43,6 +43,18 @@ public class PreferenceManager {
         return sp.getString(key, defaultValue);
     }
 
+    public void put(String key, int value) {
+        if (value == 0) {
+            sp.edit().remove(key).apply();
+        } else {
+            sp.edit().putInt(key, value).apply();
+        }
+    }
+
+    public int getInt(String key, int defaultValue) {
+        return sp.getInt(key, defaultValue);
+    }
+
     public void put(String key, long value) {
         if (value == 0) {
             sp.edit().remove(key).apply();
