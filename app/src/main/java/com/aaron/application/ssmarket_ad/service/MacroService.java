@@ -114,10 +114,11 @@ public class MacroService extends IntentService {
                                                 break;
                                             }
 
-                                            if (count++ != 0) {
+                                            if (count != 0) {
                                                 applyDays += ",";
                                             }
                                             applyDays += day.getDay();
+                                            count++;
                                         }
                                     }
                                     requestAdvertise(applyDays);

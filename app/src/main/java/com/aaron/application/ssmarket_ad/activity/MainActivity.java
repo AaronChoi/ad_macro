@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity
 
     private long getServiceStartTime() {
         if(TextUtils.isEmpty(pref.getString(PreferenceManager.PREFERENCE_AD_T, ""))
-                || TextUtils.isEmpty(pref.getString(PreferenceManager.PREFERENCE_AD_B, ""))) {
+                && TextUtils.isEmpty(pref.getString(PreferenceManager.PREFERENCE_AD_B, ""))) {
             return 0;
         }
 
