@@ -95,11 +95,17 @@ public class MacroService extends IntentService {
                                     int count = 0;
 
                                     if(requestDays != null && serverDays != null && !serverDays.isEmpty()) {
+                                        int date;
                                         for(String day : requestDays) {
+                                            date = Integer.parseInt(day);
+                                            if(date >= serverDays.size()) {
+                                                break;
+                                            }
+
                                             if(count != 0) {
                                                 applyDays += ",";
                                             }
-                                            applyDays += String.valueOf(serverDays.get(Integer.parseInt(day)).getDay());
+                                            applyDays += String.valueOf(serverDays.get(date).getDay());
                                             count++;
                                         }
                                     } else if(serverDays != null) {
