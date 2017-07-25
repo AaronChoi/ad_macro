@@ -147,15 +147,21 @@ public class MainActivity extends AppCompatActivity
         long startTime = getServiceStartTime();
         if(startTime == 0) {
             Log.d("MainActivity", "날짜를 설정해주세요.");
+            moveNextAdMacro();
             return;
         }
 
         Intent serviceIntent = new Intent(this, MacroService.class);
         serviceIntent.putExtra("adType", adType.name());
-        alarmIntent = PendingIntent.getService(this, 0, serviceIntent, 0);
+        alarmIntent = PendingIntent.getService(this, 0, serviceIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmMgr.set(AlarmManager.RTC_WAKEUP,
                 startTime - 3 * 60 * 1000, // start time
                 alarmIntent);
+    }
+
+    private void moveNextAdMacro() {
+        adType = AdType.getType(adType.getTypeNum() - 1);
+        makeAlarmJob();
     }
 
     private BroadcastReceiver stopReceiver = new BroadcastReceiver() {
@@ -166,8 +172,7 @@ public class MainActivity extends AppCompatActivity
                 return;
             }
             Log.d("MainActivity", "다음 매크로 실행 대기 중..");
-            adType = AdType.getType(adType.getTypeNum() - 1);
-            makeAlarmJob();
+            moveNextAdMacro();
         }
     };
 
@@ -267,9 +272,12 @@ public class MainActivity extends AppCompatActivity
                         // check item list
                         ArrayList<CategoryItem> items = new ArrayList<>();
                         items.addAll(root.getItems());
+                        int index = 0;
                         for(CategoryItem item : root.getItems()) {
-                            if(item.getCategory() != 44 || !item.getName().startsWith("신상")) {
+                            if(item.getCategory() != 44 || index > 3) {
                                 items.remove(item);
+                            } else {
+                                index++;
                             }
                         }
 

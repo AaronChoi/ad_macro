@@ -18,14 +18,14 @@ public enum AdType {
     }
 
     public static AdType getType(int typeNum) {
-        if(typeNum == T.getTypeNum()) {
-            return T;
-        } else if(typeNum == A.getTypeNum()) {
+        if(typeNum == A.getTypeNum()) {
             return A;
         } else if(typeNum == B.getTypeNum()) {
             return B;
-        } else {
+        } else if(typeNum == C.getTypeNum()){
             return C;
+        } else {
+            return T;
         }
     }
 }
