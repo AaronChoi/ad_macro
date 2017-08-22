@@ -14,10 +14,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('/Users/AaronMac/ssomcompany.keystore')
-            keyAlias "ssomcompany"
-            storePassword "!234rewq"
-            keyPassword "!234rewq"
+            storeFile file('/Users/AaronMac/devaaron.keystore')
+            keyAlias "devaaron"
+            storePassword "wjdgns203"
+            keyPassword "wjdgns203"
         }
     }
 

@@ -68,22 +68,11 @@
 
 -keepattributes InnerClasses
 
-#-keep class org.apache.** { *; }
-#-dontwarn org.apache.**
-#-keep class android.net.** { *; }
-#-dontwarn android.net.**
-
--keep class com.crashlytics.** { *; }
--dontwarn com.crashlytics.**
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.android.gms.**
 
 -keep class android.support.** { *; }
 -dontwarn android.support.**
-
--keep public class * extends android.app.Activity
--keep public class * extends android.app.Application
--keep public class * extends android.app.Service
--keep public class * extends android.content.BroadcastReceiver
--keep public class * extends android.content.ContentProvider
 
 -keep public class * extends android.view.View {
     public <init>(android.content.Context);
@@ -113,43 +102,55 @@
     public protected *;
 }
 
-#-keep class com.ssomcompany.ssomclient.network.api.** { *; }
-#
-#-keep class org-apache-commons.** { *; }
-#-dontwarn org-apache-commons.**
-#
-#-keep class com.loopj.android.http.** { *; }
-#-dontwarn com.loopj.android.http.**
-#
-#-keep class com.nineoldandroid.** { *; }
-#-dontwarn com.nineoldandroid.**
-#
-#-keep class com.imagezoom.** { *; }
-#-dontwarn com.imagezoom.**
-#
-#-keep class udk.android.** { *; }
-#-dontwarn udk.android.**
+-keep class * implements android.os.Parcelable {
+  public static final android.os.Parcelable$Creator *;
+}
 
-# okhttp for stetho library
--keep class okhttp3.** { *; }
--dontwarn okhttp3.**
--keep class okio.** { *; }
+-keep class udk.android.** { *; }
+-dontwarn udk.android.**
+
+# okhttp3
+-dontnote okhttp3.**
 -dontwarn okio.**
+-dontwarn okhttp3.**
 
-# Platform calls Class.forName on types which do not exist on Android to determine platform.
+# retrofit2 proguard warning
+-dontwarn retrofit2.**
+-dontwarn org.codehaus.mojo.**
+-keep class retrofit2.** { *; }
 -dontnote retrofit2.Platform
-# Platform used when running on Java 8 VMs. Will not be used at runtime.
 -dontwarn retrofit2.Platform$Java8
-# Retain generic type information for use by reflection by converters and adapters.
--keepattributes Signature
-# Retain declared checked exceptions for use by a Proxy instance.
--keepattributes Exceptions
+
+-keepattributes RuntimeVisibleAnnotations
+-keepattributes RuntimeInvisibleAnnotations
+-keepattributes RuntimeVisibleParameterAnnotations
+-keepattributes RuntimeInvisibleParameterAnnotations
+
+-keepclassmembernames interface * {
+    @retrofit2.http.* <methods>;
+}
+
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
+}
+
+-keep class com.aaron.application.ssmarket_ad.network.service.** { *; }
+-dontwarn com.aaron.application.ssmarket_ad.network.service.**
+
+-keep class com.aaron.application.ssmarket_ad.network.model.** { *; }
+-dontwarn com.aaron.application.ssmarket_ad.network.model.**
+
+# fabric for crashlytics
+-keep class com.crashlytics.** { *; }
+-dontwarn com.crashlytics.**
 
 # retrofit xml converter
 -keep class org.simpleframework.** { *; }
 -dontwarn org.simpleframework.**
 
 # glide for image loading
+-keep class com.bumptech.** { *; }
+-dontwarn com.bumptech.**
 -keep public class * implements com.bumptech.glide.module.GlideModule
 -keep public enum com.bumptech.glide.load.resource.bitmap.ImageHeaderParser$** {
   **[] $VALUES;

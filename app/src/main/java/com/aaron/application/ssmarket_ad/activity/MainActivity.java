@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity
         long startTime = getServiceStartTime();
         if(startTime == 0) {
             Log.d("MainActivity", "날짜를 설정해주세요.");
-            moveNextAdMacro();
+//            moveNextAdMacro();
             return;
         }
 
@@ -160,6 +160,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void moveNextAdMacro() {
+        if(adType.getTypeNum() <= 1) {
+            Log.d("MainActivity", "광고 매크로 종료");
+            return;
+        }
         adType = AdType.getType(adType.getTypeNum() - 1);
         makeAlarmJob();
     }
@@ -185,7 +189,7 @@ public class MainActivity extends AppCompatActivity
 
     private void stopMacro() {
         MacroService.stopService = true;
-        if(alarmMgr != null) {
+        if(alarmMgr != null && alarmIntent != null) {
             alarmMgr.cancel(alarmIntent);
         }
     }
@@ -272,13 +276,19 @@ public class MainActivity extends AppCompatActivity
                         // check item list
                         ArrayList<CategoryItem> items = new ArrayList<>();
                         items.addAll(root.getItems());
-                        int index = 0;
-                        for(CategoryItem item : root.getItems()) {
-                            if(item.getCategory() != 44 || index > 3) {
-                                items.remove(item);
-                            } else {
-                                index++;
+//                        int index = 0;
+                        try {
+                            for (CategoryItem item : root.getItems()) {
+                                if (item.getCategory() != 44 || TextUtils.isEmpty(item.getName())
+                                        || !item.getName().startsWith("신상")) {
+                                    items.remove(item);
+                                }
+//                            else {
+//                                index++;
+//                            }
                             }
+                        } catch (NumberFormatException e) {
+                            Log.e("failure", "NumberFormat : " + e.getMessage());
                         }
 
                         adType = AdType.getType(items.size());
