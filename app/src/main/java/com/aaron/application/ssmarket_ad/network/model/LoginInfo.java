@@ -2,6 +2,7 @@ package com.aaron.application.ssmarket_ad.network.model;
 
 import org.simpleframework.xml.Element;
 
+@org.simpleframework.xml.Root(strict = false)
 public class LoginInfo {
     @Element(required = false)
     private String storeName;

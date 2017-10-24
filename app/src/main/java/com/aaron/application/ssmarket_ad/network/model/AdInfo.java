@@ -1,7 +1,8 @@
 package com.aaron.application.ssmarket_ad.network.model;
 
-import org.simpleframework.xml.Element;
+import org.simpleframework.xml.*;
 
+@org.simpleframework.xml.Root(strict = false)
 public class AdInfo {
     @Element(required = false)
     private long wgIdx;

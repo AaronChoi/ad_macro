@@ -5,7 +5,7 @@ import org.simpleframework.xml.ElementList;
 
 import java.util.ArrayList;
 
-@org.simpleframework.xml.Root(name = "root")
+@org.simpleframework.xml.Root(name = "root", strict = false)
 public class AdRoot {
     @Element
     private int result_code;

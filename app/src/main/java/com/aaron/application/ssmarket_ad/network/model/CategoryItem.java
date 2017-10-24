@@ -2,7 +2,7 @@ package com.aaron.application.ssmarket_ad.network.model;
 
 import org.simpleframework.xml.Element;
 
-@org.simpleframework.xml.Root(name = "item")
+@org.simpleframework.xml.Root(name = "item", strict = false)
 public class CategoryItem {
     @Element(required = false)
     private long idx;
