@@ -1,12 +1,19 @@
 package com.aaron.application.ssmarket_ad.service;
 
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.aaron.application.ssmarket_ad.BaseApplication;
+import com.aaron.application.ssmarket_ad.R;
 import com.aaron.application.ssmarket_ad.common.AdType;
 import com.aaron.application.ssmarket_ad.common.Constant;
 import com.aaron.application.ssmarket_ad.common.PreferenceManager;
@@ -22,10 +29,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MacroService extends IntentService {
-    public static volatile boolean stopService = false;
-
     private PreferenceManager pref;
-    private long wgIdx;
+    private AdType adType;
     private AdInfo infoService;
 
     public MacroService() {
@@ -44,41 +49,20 @@ public class MacroService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         Log.d("MacroService", "service started!!");
-        stopService = false;
         pref = PreferenceManager.getInstance(this);
         infoService = RetrofitManager.getInstance(Constant.likeThatHost).create(AdInfo.class);
 
         if(intent != null) {
-            switch (intent.getStringExtra("adType")) {
-                case "T" :
-                    wgIdx = Long.parseLong(pref.getString(PreferenceManager.PREFERENCE_AD_T, ""));
-                    break;
-                case "A" :
-                    wgIdx = Long.parseLong(pref.getString(PreferenceManager.PREFERENCE_AD_A, ""));
-                    break;
-                case "B" :
-                    wgIdx = Long.parseLong(pref.getString(PreferenceManager.PREFERENCE_AD_B, ""));
-                    break;
-                case "C" :
-                    wgIdx = Long.parseLong(pref.getString(PreferenceManager.PREFERENCE_AD_C, ""));
-                    break;
-                default:
-                    wgIdx = Long.parseLong(pref.getString(PreferenceManager.PREFERENCE_AD_T, ""));
-                    break;
-            }
+            adType = AdType.getType(intent.getStringExtra("adType"));
+            Log.d("MacroService", "adType : " + adType);
         }
         requestCategoryInfo();
     }
 
     private void requestCategoryInfo() {
-        if(stopService) {
-            Log.d("MacroService", "stop service macro");
-            stopSelf();
-            return;
-        }
         Log.d("MacroService", "request category start");
 
-        infoService.requestGoodsAdInfo(wgIdx,
+        infoService.requestGoodsAdInfo(Long.parseLong(pref.getString(adType.getPrefKey(), "")),
                         Constant.userId,
                         Constant.uuid,
                         BaseApplication.TOKEN)
@@ -128,27 +112,29 @@ public class MacroService extends IntentService {
                                     } catch (InterruptedException e) {
                                         e.printStackTrace();
                                     }
+                                    Log.d("MacroService", "request category is closed.. retry..");
                                     requestCategoryInfo();
                                 }
                             } else {
-                                Log.w("MacroService", "request category error, retry...");
+                                Log.w("MacroService", "request category failed with body error, retry...");
                                 requestCategoryInfo();
                             }
                         } else {
-                            Log.w("MacroService", "request category error, retry...");
+                            Log.w("MacroService", "request category failed with response error, retry...");
                             requestCategoryInfo();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<AdRoot> call, Throwable t) {
+                        Log.e("MacroService", "request category failed with network error, retry... :::" + t.getMessage());
                         requestCategoryInfo();
                     }
                 });
     }
 
-    private void requestAdvertise(final String applyDays) {
-        infoService.requestAdvertise(wgIdx, applyDays, Constant.userId, Constant.uuid, BaseApplication.TOKEN)
+    private void requestAdvertise(String applyDays) {
+        infoService.requestAdvertise(Long.parseLong(pref.getString(adType.getPrefKey(), "")), applyDays, Constant.userId, Constant.uuid, BaseApplication.TOKEN)
                 .enqueue(new Callback<AdRoot>() {
                     @Override
                     public void onResponse(Call<AdRoot> call, Response<AdRoot> response) {
@@ -156,21 +142,33 @@ public class MacroService extends IntentService {
                             if(response.body() != null && response.body().getResult_code() != -1) {
                                 // call receiver intent to main activity
                                 Log.d("MacroService", "request ad success");
-                                LocalBroadcastManager.getInstance(MacroService.this).sendBroadcast(new Intent("action.request.ad.complete"));
+                                handleNotificationMessage(true, "");
                             } else {
-                                Log.d("MacroService", "request ad failed");
-                                requestAdvertise(applyDays);
+                                Log.e("MacroService", "request ad failed with result code ::: " + response.body().getResult_code());
+                                handleNotificationMessage(false, "result_code = " + response.body().getResult_code());
                             }
                         } else {
-                            Log.d("MacroService", "request ad failed");
-                            requestAdvertise(applyDays);
+                            Log.e("MacroService", "request ad failed with response fail");
+                            handleNotificationMessage(false, "response not success..");
                         }
                     }
 
                     @Override
                     public void onFailure(Call<AdRoot> call, Throwable t) {
-                        requestAdvertise(applyDays);
+                        Log.e("MacroService", "request ad failed with error ::: " + t.getMessage());
+                        handleNotificationMessage(false, "error : " + t.getMessage());
                     }
                 });
+    }
+
+    private void handleNotificationMessage(boolean success, String message) {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setSmallIcon(getApplicationInfo().icon)
+                .setContentTitle("광고 신청 " + (success ? "완료" : "실패"))
+                .setAutoCancel(true)
+                .setContentText(success ? "광고 Type : " + adType.getTypeName() : "실패원인 : " + message);
+
+        notificationManager.notify(adType.getRequestCode(), builder.build());
     }
 }

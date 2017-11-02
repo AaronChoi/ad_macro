@@ -5,27 +5,40 @@ package com.aaron.application.ssmarket_ad.common;
  */
 
 public enum AdType {
-    T(4), A(3), B(2), C(1);
+    T("(T)", PreferenceManager.PREFERENCE_AD_T, 1),
+    A("(a)", PreferenceManager.PREFERENCE_AD_A, 2),
+    B("(b)", PreferenceManager.PREFERENCE_AD_B, 3),
+    C("(c)", PreferenceManager.PREFERENCE_AD_C, 4);
 
-    private int typeNum;
+    private String typeName;
+    private String prefKey;
+    private int requestCode;
 
-    AdType(int typeNum) {
-        this.typeNum = typeNum;
+    AdType(String typeName, String prefKey, int requestCode) {
+        this.typeName = typeName;
+        this.prefKey = prefKey;
+        this.requestCode = requestCode;
     }
 
-    public int getTypeNum() {
-        return typeNum;
+    public String getTypeName() {
+        return typeName;
     }
 
-    public static AdType getType(int typeNum) {
-        if(typeNum == A.getTypeNum()) {
-            return A;
-        } else if(typeNum == B.getTypeNum()) {
-            return B;
-        } else if(typeNum == C.getTypeNum()){
-            return C;
-        } else {
-            return T;
+    public String getPrefKey() {
+        return prefKey;
+    }
+
+    public int getRequestCode() {
+        return requestCode;
+    }
+
+    public static AdType getType(String name) {
+        for(AdType type : AdType.values()) {
+            if(name.contains(type.getTypeName())) {
+                return type;
+            }
         }
+
+        return T;
     }
 }

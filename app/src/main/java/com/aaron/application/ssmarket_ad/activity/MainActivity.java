@@ -54,22 +54,20 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private AlarmManager alarmMgr;
-    private PendingIntent alarmIntent;
     private GridView gridView;
     private CategoryAdapter adapter;
     private PreferenceManager pref;
-    private AdType adType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        alarmMgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         pref = PreferenceManager.getInstance(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        // android 기본 padding 적용을 제거
+        toolbar.setContentInsetStartWithNavigation(0);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -92,120 +90,12 @@ public class MainActivity extends AppCompatActivity
 
         gridView = (GridView) findViewById(R.id.gridView);
         gridView.setNumColumns(2);
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                final Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(System.currentTimeMillis());
-                calendar.set(Calendar.HOUR_OF_DAY, 5);
-                calendar.set(Calendar.SECOND, 0);
-                calendar.set(Calendar.MILLISECOND, 0);
-
-                // 선택된 날짜가 있으면 그대로 설정
-                if(pref.getLong(String.valueOf(adapter.getItemId(position)), 0) != 0) {
-                    calendar.setTime(new Date(pref.getLong(String.valueOf(adapter.getItemId(position)), 0)));
-                }
-
-                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this, new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        calendar.set(Calendar.YEAR, year);
-                        calendar.set(Calendar.MONTH, month);
-                        calendar.set(Calendar.DATE, dayOfMonth);
-                        adapter.setDate(position, calendar);
-                        adapter.notifyDataSetChanged();
-                    }
-                }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-                dialog.show();
-            }
-        });
-
-        findViewById(R.id.btn_action).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                makeAlarmJob();
-            }
-        });
-
-        findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                stopMacro();
-            }
-        });
 
         if(BaseApplication.TOKEN == null) {
             requestToken();
         } else {
             requestInitialData();
         }
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(stopReceiver, new IntentFilter("action.request.ad.complete"));
-    }
-
-    private void makeAlarmJob() {
-        long startTime = getServiceStartTime();
-        if(startTime == 0) {
-            Log.d("MainActivity", "날짜를 설정해주세요.");
-//            moveNextAdMacro();
-            return;
-        }
-
-        Intent serviceIntent = new Intent(this, MacroService.class);
-        serviceIntent.putExtra("adType", adType.name());
-        alarmIntent = PendingIntent.getService(this, 0, serviceIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmMgr.set(AlarmManager.RTC_WAKEUP,
-                startTime - 3 * 60 * 1000, // start time
-                alarmIntent);
-    }
-
-    private void moveNextAdMacro() {
-        if(adType.getTypeNum() <= 1) {
-            Log.d("MainActivity", "광고 매크로 종료");
-            return;
-        }
-        adType = AdType.getType(adType.getTypeNum() - 1);
-        makeAlarmJob();
-    }
-
-    private BroadcastReceiver stopReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if(adType == AdType.C) {
-                Log.d("MainActivity", "광고 매크로 종료");
-                return;
-            }
-            Log.d("MainActivity", "다음 매크로 실행 대기 중..");
-            moveNextAdMacro();
-        }
-    };
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(stopReceiver);
-    }
-
-    private void stopMacro() {
-        MacroService.stopService = true;
-        if(alarmMgr != null && alarmIntent != null) {
-            alarmMgr.cancel(alarmIntent);
-        }
-    }
-
-    private long getServiceStartTime() {
-        if(TextUtils.isEmpty(pref.getString(PreferenceManager.PREFERENCE_AD_T, ""))
-                && TextUtils.isEmpty(pref.getString(PreferenceManager.PREFERENCE_AD_B, ""))) {
-            return 0;
-        }
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(pref.getLong(String.valueOf(adapter.getItemId(adType.getTypeNum()-1)), 0));
-        Log.d("MainActivity", "calendar time : " + calendar.get(Calendar.MONTH) + "month " + calendar.get(Calendar.DAY_OF_MONTH) + "date "
-                + calendar.get(Calendar.HOUR_OF_DAY) + "hour " + calendar.get(Calendar.MINUTE) + "min");
-
-        return calendar.getTimeInMillis();
     }
 
     private void requestToken() {
@@ -291,8 +181,7 @@ public class MainActivity extends AppCompatActivity
                             Log.e("failure", "NumberFormat : " + e.getMessage());
                         }
 
-                        adType = AdType.getType(items.size());
-                        adapter = new CategoryAdapter(getApplicationContext(), items);
+                        adapter = new CategoryAdapter(MainActivity.this, items);
                         gridView.setAdapter(adapter);
                     }
                 }
