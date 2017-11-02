@@ -74,7 +74,7 @@ public class MacroService extends IntentService {
                                 boolean isOpen = !"Closed".equalsIgnoreCase(response.body().getInfo().getStatus());
                                 if(isOpen) {
                                     String applyDays = "";
-                                    ArrayList<String> requestDays = pref.getStringArray(PreferenceManager.PREFERENCE_CALENDAR, null);
+                                    ArrayList<String> requestDays = pref.getStringArray(adType.getCalendarKey(), null);
                                     ArrayList<Goods> serverDays = response.body().getItems();
                                     int count = 0;
 

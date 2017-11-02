@@ -18,6 +18,50 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <RadioGroup
+        android:id="@+id/typeOptions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/typeT"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:gravity="center"
+            android:text="T"/>
+
+        <RadioButton
+            android:id="@+id/typeA"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="A"/>
+
+        <RadioButton
+            android:id="@+id/typeB"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="B"/>
+
+        <RadioButton
+            android:id="@+id/typeC"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="C"/>
+    </RadioGroup>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#44000000"/>
+
     <ListView
         android:id="@+id/lv_calendar"
         android:layout_width="match_parent"

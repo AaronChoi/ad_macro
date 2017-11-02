@@ -16,11 +16,18 @@ import java.util.ArrayList;
 public class CalendarAdapter extends BaseAdapter {
     private ArrayList<Boolean> items = new ArrayList<>();
     private Context mContext;
+    private String lastKey;
 
     public CalendarAdapter(Context context) {
         mContext = context;
 
-        ArrayList<String> arrayList = PreferenceManager.getInstance(context).getStringArray(PreferenceManager.PREFERENCE_CALENDAR, null);
+        setItems(PreferenceManager.PREFERENCE_CALENDAR_T);
+    }
+
+    public void setItems(String key) {
+        lastKey = key;
+        ArrayList<String> arrayList = PreferenceManager.getInstance(mContext).getStringArray(key, null);
+        items.clear();
         for(int i=0 ; i<27 ; i++) {
             items.add(false);
         }
@@ -30,6 +37,7 @@ public class CalendarAdapter extends BaseAdapter {
                 items.set(Integer.parseInt(item), true);
             }
         }
+        notifyDataSetChanged();
     }
 
     public ArrayList<String> getItems() {
@@ -42,6 +50,10 @@ public class CalendarAdapter extends BaseAdapter {
             index++;
         }
         return resultArray;
+    }
+
+    public String getLastKey() {
+        return lastKey;
     }
 
     @Override

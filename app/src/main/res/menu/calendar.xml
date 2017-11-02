@@ -2,8 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_apply"
+        android:id="@+id/action_reset"
         android:orderInCategory="100"
-        android:title="@string/action_apply"
+        android:title="@string/action_reset"
         app:showAsAction="always" />
 </menu>

@@ -13,7 +13,11 @@ public class PreferenceManager {
 
     private static final String APP_PREFERENCE = "APP_PREFERENCE";
     public static final String PREFERENCE_TOKEN = "PREFERENCE_TOKEN";
-    public static final String PREFERENCE_CALENDAR = "PREFERENCE_CALENDAR";
+
+    public static final String PREFERENCE_CALENDAR_T = "PREFERENCE_CALENDAR_T";
+    public static final String PREFERENCE_CALENDAR_A = "PREFERENCE_CALENDAR_A";
+    public static final String PREFERENCE_CALENDAR_B = "PREFERENCE_CALENDAR_B";
+    public static final String PREFERENCE_CALENDAR_C = "PREFERENCE_CALENDAR_C";
 
     public static final String PREFERENCE_AD_T = "PREFERENCE_AD_T";
     public static final String PREFERENCE_AD_A = "PREFERENCE_AD_A";
