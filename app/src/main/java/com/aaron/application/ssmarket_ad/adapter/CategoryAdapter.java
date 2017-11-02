@@ -128,8 +128,8 @@ public class CategoryAdapter extends BaseAdapter {
                         + calendar.get(Calendar.HOUR_OF_DAY) + "hour " + calendar.get(Calendar.MINUTE) + "min");
 
                 alarmMgr.set(AlarmManager.RTC_WAKEUP,
-//                        adTime - 3 * 60 * 1000, // start time
-                        Calendar.getInstance().getTimeInMillis() + 3000,
+                        adTime - 3 * 60 * 1000, // start time
+//                        Calendar.getInstance().getTimeInMillis() + 3000,  // test 용 현재시간 3초뒤 실행
                         getAlarmIntent(AdType.getType(item.getName())));
             }
         });
