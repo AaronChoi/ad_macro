@@ -1,17 +1,9 @@
 package com.aaron.application.ssmarket_ad.activity;
 
-import android.app.AlarmManager;
-import android.app.DatePickerDialog;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -22,8 +14,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.DatePicker;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -31,7 +21,6 @@ import android.widget.TextView;
 import com.aaron.application.ssmarket_ad.BaseApplication;
 import com.aaron.application.ssmarket_ad.R;
 import com.aaron.application.ssmarket_ad.adapter.CategoryAdapter;
-import com.aaron.application.ssmarket_ad.common.AdType;
 import com.aaron.application.ssmarket_ad.common.Constant;
 import com.aaron.application.ssmarket_ad.common.PreferenceManager;
 import com.aaron.application.ssmarket_ad.network.RetrofitManager;
@@ -39,12 +28,9 @@ import com.aaron.application.ssmarket_ad.network.model.CategoryItem;
 import com.aaron.application.ssmarket_ad.network.model.Root;
 import com.aaron.application.ssmarket_ad.network.service.ItemList;
 import com.aaron.application.ssmarket_ad.network.service.Login;
-import com.aaron.application.ssmarket_ad.service.MacroService;
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 import retrofit2.Call;
