@@ -152,7 +152,24 @@ public class CategoryAdapter extends BaseAdapter {
     public void setDate(CategoryItem item, Calendar calendar) {
         AdType adType = AdType.getType(item.getName());
         String idx = String.valueOf(item.getIdx());
-        calendar.set(Calendar.MINUTE, adType == AdType.A ? 5 : adType == AdType.B ? 10 : 15);
+        int minute;
+        switch (adType) {
+            case A:
+                minute = 5;
+                break;
+            case B:
+                minute = 10;
+                break;
+            case C:
+                minute = 15;
+                break;
+            case T:
+            default:
+                // T 는 기본적으로 0 으로 설정
+                minute = 0;
+                break;
+        }
+        calendar.set(Calendar.MINUTE, minute);
         pref.put(adType.getPrefKey(), idx);
         pref.put(idx, calendar.getTimeInMillis());
     }
