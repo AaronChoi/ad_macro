@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.aaron.application.ssmarket_ad"
-        minSdkVersion 23
+        minSdkVersion 21
         targetSdkVersion 26
         versionCode 103
         versionName "1.0.3"
